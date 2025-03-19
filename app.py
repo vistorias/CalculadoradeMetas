@@ -28,7 +28,7 @@ def calcular_meta(valor_mensal, indicadores):
 st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
 st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
 
-valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, value=3000.0, step=100.0, format="%.2f")
+valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, step=100.0, format="%.2f")
 
 meses = ["Janeiro", "Fevereiro", "Março"]
 indicadores = ["Produção", "Ticket Médio", "Despesas", "Satisfação Cliente", "Pesquisa Clima", "Turnover", "ABS", "Treinamento"]
