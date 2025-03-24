@@ -1,19 +1,21 @@
 import streamlit as st
 
-# CSS para estilizar o checkbox (deixar cinza claro)
+# AQUI PRIMEIRO: Configuração da página
+st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
+
+# CSS para deixar o checkbox com cor neutra (cinza claro)
 st.markdown("""
     <style>
         input[type="checkbox"] {
-            accent-color: lightgray;
+            accent-color: #d3d3d3;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Configuração da página
-st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
+# Título da página
 st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
 
-# Entrada do valor mensal
+# Entrada do valor mensal da meta
 valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, step=10.0, format="%.2f")
 
 # Pesos dos indicadores
@@ -46,18 +48,22 @@ for i, col in enumerate(colunas):
             checked = st.checkbox(f"{indicador} ({meses[i]})", value=True, key=chave)
             indicadores[indicador] = checked
 
+            # ✅ ou ❌ ao lado do valor - NA MESMA LINHA DO NOME
             icone = "✅" if checked else "❌"
             cor = "green" if checked else "red"
 
             st.markdown(
-                f"<span style='margin-left: 10px; color: {cor}; font-weight: bold;'>– {icone} R$ {valor_ind:.2f}</span>",
+                f"<span style='color: {cor}; font-weight: bold;'>{icone} R$ {valor_ind:.2f}</span>",
                 unsafe_allow_html=True
             )
 
             if not checked:
                 total_perdido_mes += valor_ind
 
-        st.markdown(f"<br><strong>Total perdido em {meses[i]}:</strong> <span style='color:red'>R$ {total_perdido_mes:.2f}</span>", unsafe_allow_html=True)
+        st.markdown(
+            f"<br><strong>Total perdido em {meses[i]}:</strong> <span style='color:red'>R$ {total_perdido_mes:.2f}</span>",
+            unsafe_allow_html=True
+        )
         indicadores_por_mes.append(indicadores)
 
 # Botão Calcular
