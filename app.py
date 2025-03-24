@@ -1,5 +1,14 @@
 import streamlit as st
 
+# CSS para estilizar o checkbox (deixar cinza claro)
+st.markdown("""
+    <style>
+        input[type="checkbox"] {
+            accent-color: lightgray;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # Configuração da página
 st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
 st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
@@ -39,14 +48,14 @@ for i, col in enumerate(colunas):
 
             icone = "✅" if checked else "❌"
             cor = "green" if checked else "red"
-            if not checked:
-                total_perdido_mes += valor_ind
 
-            texto_formatado = f"<span style='color:{cor}'>{icone} R$ {valor_ind:.2f}</span>"
             st.markdown(
-                f"<div style='margin-left: 25px; margin-top: -12px;'>{texto_formatado}</div>",
+                f"<span style='margin-left: 10px; color: {cor}; font-weight: bold;'>– {icone} R$ {valor_ind:.2f}</span>",
                 unsafe_allow_html=True
             )
+
+            if not checked:
+                total_perdido_mes += valor_ind
 
         st.markdown(f"<br><strong>Total perdido em {meses[i]}:</strong> <span style='color:red'>R$ {total_perdido_mes:.2f}</span>", unsafe_allow_html=True)
         indicadores_por_mes.append(indicadores)
