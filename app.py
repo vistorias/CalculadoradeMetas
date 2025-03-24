@@ -1,4 +1,9 @@
-# CSS mais específico e forçado para a cor da checkbox
+import streamlit as st
+
+# 🛠️ Configuração da página – precisa vir primeiro!
+st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
+
+# 🎨 Estilo para alterar a cor da checkbox para cinza claro
 st.markdown("""
     <style>
         div[data-baseweb="checkbox"] input[type="checkbox"] {
@@ -7,12 +12,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
-
-# Valor mensal da meta
-valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, step=10.0, format="%.2f")
-
-# Pesos dos indicadores
+# 📌 Pesos por indicador
 pesos = {
     'Produção': 0.15,
     'Ticket Médio': 0.15,
@@ -24,41 +24,45 @@ pesos = {
     'Treinamento': 0.0688
 }
 
+# 🖼️ Título
+st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
+
+# 💰 Entrada do valor mensal da meta
+valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, step=10.0, format="%.2f")
+
+# 🗓️ Meses
 meses = ["Janeiro", "Fevereiro", "Março"]
 colunas = st.columns(3)
 indicadores_por_mes = []
 
-for idx, col in enumerate(colunas):
+for i, col in enumerate(colunas):
     with col:
-        st.subheader(meses[idx])
+        st.subheader(meses[i])
         indicadores = {}
-        total_perdido = 0
+        total_perdido = 0.0
         for indicador, peso in pesos.items():
-            chave = f"{indicador}_{meses[idx]}"
-            marcado = st.checkbox(f"{indicador} ({meses[idx]})", value=True, key=chave)
+            key = f"{indicador} ({meses[i]})"
+            checked = st.checkbox(key, value=True, key=key)
             valor_indicador = valor_mensal * peso
-            if marcado:
-                st.markdown(f"<span style='color: green;'>✅ R$ {valor_indicador:,.2f}</span>", unsafe_allow_html=True)
+            if checked:
+                st.markdown(f"<span style='color: green;'>✅ R$ {valor_indicador:.2f}</span>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<span style='color: red;'>❌ R$ {valor_indicador:,.2f}</span>", unsafe_allow_html=True)
+                st.markdown(f"<span style='color: red;'>❌ R$ {valor_indicador:.2f}</span>", unsafe_allow_html=True)
                 total_perdido += valor_indicador
-            indicadores[indicador] = marcado
+            indicadores[indicador] = checked
+        st.markdown(f"<strong>Total perdido em {meses[i]}:</strong> <span style='color: red;'>R$ {total_perdido:.2f}</span>", unsafe_allow_html=True)
         indicadores_por_mes.append(indicadores)
-        st.markdown(f"<b>Total perdido em {meses[idx]}:</b> <span style='color: red;'>R$ {total_perdido:,.2f}</span>", unsafe_allow_html=True)
 
-# Botão para calcular
+# 🔘 Botão de cálculo
 if st.button("Calcular"):
-    total_meta = valor_mensal * 3
-    total_receber = total_meta
-    total_perda_trimestre = 0
-
-    for i, mes in enumerate(meses):
+    total_perdido = 0.0
+    for i in range(3):
         for indicador, ativo in indicadores_por_mes[i].items():
             if not ativo:
-                perda = valor_mensal * pesos[indicador]
-                total_receber -= perda
-                total_perda_trimestre += perda
+                total_perdido += valor_mensal * pesos[indicador]
+
+    valor_total = (valor_mensal * 3) - total_perdido
 
     st.markdown("---")
-    st.markdown(f"<div style='text-align: center;'><b>💰 Total perdido no trimestre:</b> <span style='color: red;'>R$ {total_perda_trimestre:,.2f}</span></div>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align: center;'><span style='color: green;'>✅ Valor final da meta a receber: R$ {total_receber:,.2f}</span></div>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'>💰 <span style='color: black;'>Total perdido no trimestre:</span> <span style='color: red;'>R$ {total_perdido:.2f}</span></h4>", unsafe_allow_html=True)
+    st.markdown(f"<h4 style='text-align: center;'>✅ <span style='color: black;'>Valor final da meta a receber:</span> <span style='color: green;'>R$ {valor_total:.2f}</span></h4>", unsafe_allow_html=True)
