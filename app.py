@@ -1,9 +1,9 @@
 import streamlit as st
 
-# AQUI PRIMEIRO: Configuração da página
+# 1º COMANDO OBRIGATÓRIO
 st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
 
-# CSS para deixar o checkbox com cor neutra (cinza claro)
+# ESTILO para mudar a cor do checkbox (cinza claro)
 st.markdown("""
     <style>
         input[type="checkbox"] {
@@ -12,13 +12,13 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Título da página
+# TÍTULO CENTRALIZADO
 st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
 
-# Entrada do valor mensal da meta
+# ENTRADA DO VALOR MENSAL
 valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, step=10.0, format="%.2f")
 
-# Pesos dos indicadores
+# PESOS POR INDICADOR
 pesos = {
     "Produção": 0.15,
     "Ticket Médio": 0.15,
@@ -30,12 +30,11 @@ pesos = {
     "Treinamento": 0.0688,
 }
 
-# Meses e colunas
 meses = ["Janeiro", "Fevereiro", "Março"]
 colunas = st.columns(3)
 indicadores_por_mes = []
 
-# Interface principal
+# GERANDO AS COLUNAS COM CHECKBOX + VALOR + ÍCONE NA MESMA LINHA
 for i, col in enumerate(colunas):
     with col:
         st.subheader(meses[i])
@@ -46,16 +45,17 @@ for i, col in enumerate(colunas):
             valor_ind = valor_mensal * peso
             chave = f"{indicador}_{meses[i]}"
             checked = st.checkbox(f"{indicador} ({meses[i]})", value=True, key=chave)
-            indicadores[indicador] = checked
 
-            # ✅ ou ❌ ao lado do valor - NA MESMA LINHA DO NOME
             icone = "✅" if checked else "❌"
             cor = "green" if checked else "red"
 
+            # Aqui unimos o nome e o valor com ícone na mesma linha
             st.markdown(
-                f"<span style='color: {cor}; font-weight: bold;'>{icone} R$ {valor_ind:.2f}</span>",
+                f"<span style='color:{cor}'>{icone} R$ {valor_ind:,.2f}</span>",
                 unsafe_allow_html=True
             )
+
+            indicadores[indicador] = checked
 
             if not checked:
                 total_perdido_mes += valor_ind
@@ -66,10 +66,10 @@ for i, col in enumerate(colunas):
         )
         indicadores_por_mes.append(indicadores)
 
-# Botão Calcular
+# BOTÃO CALCULAR
 if st.button("Calcular"):
     total_perdido = 0.0
-    for i, indicadores in enumerate(indicadores_por_mes):
+    for indicadores in indicadores_por_mes:
         for indicador, ativo in indicadores.items():
             if not ativo:
                 total_perdido += valor_mensal * pesos[indicador]
