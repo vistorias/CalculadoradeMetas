@@ -1,88 +1,68 @@
 import streamlit as st
 
-# 1º COMANDO OBRIGATÓRIO
+# Esta linha deve ser a primeira do script
 st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
 
-# ESTILO para mudar a cor do checkbox (cinza claro)
-st.markdown("""
-    <style>
-        input[type="checkbox"] {
-            accent-color: #d3d3d3;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-# TÍTULO CENTRALIZADO
 st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
 
-# ENTRADA DO VALOR MENSAL
+# Entrada do valor mensal da meta
 valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, step=10.0, format="%.2f")
 
-# PESOS POR INDICADOR
+# Pesos dos indicadores
 pesos = {
-    "Produção": 0.15,
-    "Ticket Médio": 0.15,
-    "Despesas": 0.15,
-    "Satisfação Cliente": 0.275,
-    "Pesquisa Clima": 0.0688,
-    "Turnover": 0.0688,
-    "ABS": 0.0688,
-    "Treinamento": 0.0688,
+    'Produção': 0.15,
+    'Ticket Médio': 0.15,
+    'Despesas': 0.15,
+    'Satisfação Cliente': 0.275,
+    'Pesquisa Clima': 0.0688,
+    'Turnover': 0.0688,
+    'ABS': 0.0688,
+    'Treinamento': 0.0688
 }
 
 meses = ["Janeiro", "Fevereiro", "Março"]
-colunas = st.columns(3)
+col1, col2, col3 = st.columns(3)
+colunas = [col1, col2, col3]
 indicadores_por_mes = []
 
-# GERANDO AS COLUNAS COM CHECKBOX + VALOR + ÍCONE NA MESMA LINHA
-for i, col in enumerate(colunas):
+# Interface dos indicadores
+for idx, col in enumerate(colunas):
     with col:
-        st.subheader(meses[i])
-        indicadores = {}
-        total_perdido_mes = 0.0
-
+        st.markdown(f"### {meses[idx]}")
+        indicadores_mes = {}
+        total_perdido = 0
         for indicador, peso in pesos.items():
-            valor_ind = valor_mensal * peso
-            chave = f"{indicador}_{meses[i]}"
-            checked = st.checkbox(f"{indicador} ({meses[i]})", value=True, key=chave)
+            valor = valor_mensal * peso
+            key = f"{indicador}_{meses[idx]}"
+            checked = st.checkbox(f"{indicador} ({meses[idx]})", value=True, key=key)
 
-            icone = "✅" if checked else "❌"
-            cor = "green" if checked else "red"
+            if checked:
+                indicadores_mes[indicador] = True
+                st.markdown(f"<span style='color: green;'>✅ R$ {valor:.2f}</span>", unsafe_allow_html=True)
+            else:
+                indicadores_mes[indicador] = False
+                st.markdown(f"<span style='color: red;'>❌ R$ {valor:.2f}</span>", unsafe_allow_html=True)
+                total_perdido += valor
 
-            # Aqui unimos o nome e o valor com ícone na mesma linha
-            st.markdown(
-                f"<span style='color:{cor}'>{icone} R$ {valor_ind:,.2f}</span>",
-                unsafe_allow_html=True
-            )
+        indicadores_por_mes.append(indicadores_mes)
+        st.markdown(f"<br><strong>Total perdido em {meses[idx]}:</strong> <span style='color:red'>R$ {total_perdido:.2f}</span>", unsafe_allow_html=True)
 
-            indicadores[indicador] = checked
-
-            if not checked:
-                total_perdido_mes += valor_ind
-
-        st.markdown(
-            f"<br><strong>Total perdido em {meses[i]}:</strong> <span style='color:red'>R$ {total_perdido_mes:.2f}</span>",
-            unsafe_allow_html=True
-        )
-        indicadores_por_mes.append(indicadores)
-
-# BOTÃO CALCULAR
+# Botão calcular
 if st.button("Calcular"):
-    total_perdido = 0.0
-    for indicadores in indicadores_por_mes:
-        for indicador, ativo in indicadores.items():
+    total_trimestre = valor_mensal * 3
+    total_receber = total_trimestre
+
+    for idx, indicadores_mes in enumerate(indicadores_por_mes):
+        for indicador, ativo in indicadores_mes.items():
             if not ativo:
-                total_perdido += valor_mensal * pesos[indicador]
+                total_receber -= valor_mensal * pesos[indicador]
 
-    valor_receber = (valor_mensal * 3) - total_perdido
+    total_perdido = total_trimestre - total_receber
 
-    st.markdown("---")
+    st.markdown("<hr>", unsafe_allow_html=True)
     st.markdown(
-        f"""
-        <div style='text-align:center; font-size: 18px;'>
-            <p>💰 <strong>Total perdido no trimestre:</strong> <span style='color:red'>R$ {total_perdido:.2f}</span></p>
-            <p>✅ <strong>Valor final da meta a receber:</strong> <span style='color:green'>R$ {valor_receber:,.2f}</span></p>
-        </div>
-        """,
+        f"<div style='text-align: center; font-size: 18px;'><br>"
+        f"💰 <strong>Total perdido no trimestre:</strong> <span style='color:red'>R$ {total_perdido:.2f}</span><br><br>"
+        f"✅ <strong>Valor final da meta a receber:</strong> <span style='color:green'>R$ {total_receber:.2f}</span></div>",
         unsafe_allow_html=True
     )
