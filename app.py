@@ -1,13 +1,8 @@
-import streamlit as st
-
-# Configuração da página
-st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
-
-# CSS para mudar a cor da checkbox para cinza claro
+# CSS mais específico e forçado para a cor da checkbox
 st.markdown("""
     <style>
-        input[type="checkbox"] {
-            accent-color: lightgray !important;
+        div[data-baseweb="checkbox"] input[type="checkbox"] {
+            accent-color: #d3d3d3 !important;
         }
     </style>
 """, unsafe_allow_html=True)
