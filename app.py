@@ -23,7 +23,7 @@ meses = ["Janeiro", "Fevereiro", "Março"]
 colunas = st.columns(3)
 indicadores_por_mes = []
 
-# Exibir indicadores
+# Interface
 for i, col in enumerate(colunas):
     mes = meses[i]
     with col:
@@ -33,18 +33,12 @@ for i, col in enumerate(colunas):
         for indicador, peso in pesos.items():
             valor_indicador = valor_mensal * peso
             key = f"{indicador}_{mes}"
-            ativo = st.checkbox(f"{indicador} ({mes})", value=True, key=key)
 
-            if ativo:
-                st.markdown(
-                    f"<span style='color: green;'>✅ {indicador} ({mes}) — R$ {valor_indicador:,.2f}</span>",
-                    unsafe_allow_html=True
-                )
-            else:
-                st.markdown(
-                    f"<span style='color: red;'>❌ {indicador} ({mes}) — R$ {valor_indicador:,.2f}</span>",
-                    unsafe_allow_html=True
-                )
+            # Monta o texto com status e valor
+            texto_exibicao = f"{indicador} ({mes}) — R$ {valor_indicador:,.2f}"
+            ativo = st.checkbox(texto_exibicao, value=True, key=key)
+
+            if not ativo:
                 total_perdido_mes += valor_indicador
 
             indicadores[indicador] = ativo
