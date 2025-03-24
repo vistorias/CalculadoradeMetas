@@ -25,26 +25,37 @@ colunas = [col1, col2, col3]
 
 indicadores_por_mes = []
 
-# Criação dos checkboxes e exibição dos valores
+# Criando os blocos por mês
 for i, col in enumerate(colunas):
     mes = meses[i]
     with col:
         st.subheader(mes)
         indicadores = {}
         total_perdido = 0
+
         for indicador, peso in pesos.items():
             valor_indicador = valor_mensal * peso
             checked = st.checkbox(f"{indicador} ({mes})", value=True, key=f"{indicador}_{mes}")
+            
+            # Mostrar valor ao lado (na mesma linha)
             if checked:
-                st.markdown(f"<span style='color: green;'>✅ R$ {valor_indicador:.2f}</span>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<span style='color: green;'>✅ {indicador} ({mes}) - R$ {valor_indicador:.2f}</span>",
+                    unsafe_allow_html=True
+                )
             else:
-                st.markdown(f"<span style='color: red;'>❌ R$ {valor_indicador:.2f}</span>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<span style='color: red;'>❌ {indicador} ({mes}) - R$ {valor_indicador:.2f}</span>",
+                    unsafe_allow_html=True
+                )
                 total_perdido += valor_indicador
+
             indicadores[indicador] = checked
+
         indicadores_por_mes.append(indicadores)
 
         # Total perdido no mês
-        st.markdown(f"<br><b>Total perdido em {mes}:</b> <span style='color: red;'>R$ {total_perdido:.2f}</span><br><hr>", unsafe_allow_html=True)
+        st.markdown(f"<br><b>Total perdido em {mes}:</b> <span style='color: red;'>R$ {total_perdido:.2f}</span><hr>", unsafe_allow_html=True)
 
 # Cálculo final
 if st.button("Calcular"):
