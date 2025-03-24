@@ -1,6 +1,6 @@
 import streamlit as st
 
-# Configurações da página
+# Configuração da página
 st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
 st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
 
@@ -24,32 +24,38 @@ meses = ["Janeiro", "Fevereiro", "Março"]
 colunas = st.columns(3)
 indicadores_por_mes = []
 
-# Interface com checkboxes e valores ao lado
+# Interface principal
 for i, col in enumerate(colunas):
     with col:
         st.subheader(meses[i])
         indicadores = {}
         total_perdido_mes = 0.0
+
         for indicador, peso in pesos.items():
-            valor_indicador = valor_mensal * peso
+            valor_ind = valor_mensal * peso
             chave = f"{indicador}_{meses[i]}"
-            checado = st.checkbox(f"{indicador} ({meses[i]})", value=True, key=chave)
+            checked = st.checkbox(f"{indicador} ({meses[i]})", value=True, key=chave)
+            indicadores[indicador] = checked
 
-            if checado:
-                st.markdown(f"<span style='color:green'>✅ R$ {valor_indicador:.2f}</span>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<span style='color:red'>❌ R$ {valor_indicador:.2f}</span>", unsafe_allow_html=True)
-                total_perdido_mes += valor_indicador
+            icone = "✅" if checked else "❌"
+            cor = "green" if checked else "red"
+            if not checked:
+                total_perdido_mes += valor_ind
 
-            indicadores[indicador] = checado
-        st.markdown(f"<strong>Total perdido em {meses[i]}:</strong> <span style='color:red'>R$ {total_perdido_mes:.2f}</span>", unsafe_allow_html=True)
+            texto_formatado = f"<span style='color:{cor}'>{icone} R$ {valor_ind:.2f}</span>"
+            st.markdown(
+                f"<div style='margin-left: 25px; margin-top: -12px;'>{texto_formatado}</div>",
+                unsafe_allow_html=True
+            )
+
+        st.markdown(f"<br><strong>Total perdido em {meses[i]}:</strong> <span style='color:red'>R$ {total_perdido_mes:.2f}</span>", unsafe_allow_html=True)
         indicadores_por_mes.append(indicadores)
 
-# Botão para calcular
+# Botão Calcular
 if st.button("Calcular"):
     total_perdido = 0.0
-    for i, mes_indicadores in enumerate(indicadores_por_mes):
-        for indicador, ativo in mes_indicadores.items():
+    for i, indicadores in enumerate(indicadores_por_mes):
+        for indicador, ativo in indicadores.items():
             if not ativo:
                 total_perdido += valor_mensal * pesos[indicador]
 
