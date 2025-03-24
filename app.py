@@ -23,7 +23,7 @@ meses = ["Janeiro", "Fevereiro", "Março"]
 colunas = st.columns(3)
 indicadores_por_mes = []
 
-# Criar os blocos por mês
+# Exibir indicadores
 for i, col in enumerate(colunas):
     mes = meses[i]
     with col:
@@ -32,21 +32,27 @@ for i, col in enumerate(colunas):
         total_perdido_mes = 0.0
         for indicador, peso in pesos.items():
             valor_indicador = valor_mensal * peso
-            key_checkbox = f"{indicador}_{mes}"
-            checked = st.checkbox(f"{indicador} ({mes})", value=True, key=key_checkbox)
+            key = f"{indicador}_{mes}"
+            ativo = st.checkbox(f"{indicador} ({mes})", value=True, key=key)
 
-            if checked:
-                st.markdown(f"<span style='color: green;'>✅ R$ {valor_indicador:,.2f}</span>", unsafe_allow_html=True)
+            if ativo:
+                st.markdown(
+                    f"<span style='color: green;'>✅ {indicador} ({mes}) — R$ {valor_indicador:,.2f}</span>",
+                    unsafe_allow_html=True
+                )
             else:
-                st.markdown(f"<span style='color: red;'>❌ R$ {valor_indicador:,.2f}</span>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<span style='color: red;'>❌ {indicador} ({mes}) — R$ {valor_indicador:,.2f}</span>",
+                    unsafe_allow_html=True
+                )
                 total_perdido_mes += valor_indicador
 
-            indicadores[indicador] = checked
+            indicadores[indicador] = ativo
 
         indicadores_por_mes.append(indicadores)
         st.markdown(f"**Total perdido em {mes}:** <span style='color: red;'>R$ {total_perdido_mes:,.2f}</span>", unsafe_allow_html=True)
 
-# Botão para calcular valor final da meta
+# Botão de cálculo final
 if st.button("Calcular"):
     valor_trimestre = valor_mensal * 3
     valor_total_perdido = 0.0
@@ -59,5 +65,11 @@ if st.button("Calcular"):
     valor_receber = valor_trimestre - valor_total_perdido
 
     st.markdown("---")
-    st.markdown(f"<h4 style='text-align: center;'>💰 <strong>Total perdido no trimestre:</strong> <span style='color: red;'>R$ {valor_total_perdido:,.2f}</span></h4>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align: center;'>✅ <strong>Valor final da meta a receber:</strong> R$ {valor_receber:,.2f}</h3>", unsafe_allow_html=True)
+    st.markdown(
+        f"<h4 style='text-align: center;'>💰 Total perdido no trimestre: <span style='color: red;'>R$ {valor_total_perdido:,.2f}</span></h4>",
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        f"<h3 style='text-align: center;'>✅ Valor final da meta a receber: R$ {valor_receber:,.2f}</h3>",
+        unsafe_allow_html=True
+    )
