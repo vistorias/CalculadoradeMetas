@@ -1,44 +1,59 @@
 import streamlit as st
 
-st.set_page_config(page_title="Calculadora de Metas Trimestrais")
-st.title("📊 Calculadora de Metas Trimestrais")
+# Configuração
+st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
+st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
 
+# Entrada do valor mensal da meta
 valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, step=100.0, format="%.2f")
 
-indicadores = [
-    "Produção", "Ticket Médio", "Despesas", "Satisfação Cliente",
-    "Pesquisa Clima", "Turnover", "ABS", "Treinamento"
-]
+# Pesos dos indicadores
+pesos = {
+    'Produção': 0.15,
+    'Ticket Médio': 0.15,
+    'Despesas': 0.15,
+    'Satisfação Cliente': 0.275,
+    'Pesquisa Clima': 0.0688,
+    'Turnover': 0.0688,
+    'ABS': 0.0688,
+    'Treinamento': 0.0688
+}
 
 meses = ["Janeiro", "Fevereiro", "Março"]
-
-# Inicializa dicionário para guardar seleções e totais perdidos
-selecionados = {}
-total_perdido = {}
-
 col1, col2, col3 = st.columns(3)
+colunas = [col1, col2, col3]
 
-for idx, mes in enumerate(meses):
-    with [col1, col2, col3][idx]:
+indicadores_por_mes = []
+
+# Criação dos checkboxes e exibição dos valores
+for i, col in enumerate(colunas):
+    mes = meses[i]
+    with col:
         st.subheader(mes)
-        selecionados[mes] = {}
-        total_perdido[mes] = 0
-
-        for indicador in indicadores:
-            chave = f"{indicador} ({mes})"
-            check = st.checkbox(chave, value=True, key=chave)
-            valor_indicador = valor_mensal / len(indicadores) if valor_mensal else 0
-
-            if check:
-                st.write(f"✅ R$ {valor_indicador:,.2f}")
-                selecionados[mes][indicador] = True
+        indicadores = {}
+        total_perdido = 0
+        for indicador, peso in pesos.items():
+            valor_indicador = valor_mensal * peso
+            checked = st.checkbox(f"{indicador} ({mes})", value=True, key=f"{indicador}_{mes}")
+            if checked:
+                st.markdown(f"<span style='color: green;'>✅ R$ {valor_indicador:.2f}</span>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<span style='color:red'>❌ R$ {valor_indicador:,.2f}</span>", unsafe_allow_html=True)
-                selecionados[mes][indicador] = False
-                total_perdido[mes] += valor_indicador
+                st.markdown(f"<span style='color: red;'>❌ R$ {valor_indicador:.2f}</span>", unsafe_allow_html=True)
+                total_perdido += valor_indicador
+            indicadores[indicador] = checked
+        indicadores_por_mes.append(indicadores)
 
-# Exibe o total perdido por mês
-st.markdown("---")
-st.subheader("Resumo de valores perdidos por mês:")
-for mes in meses:
-    st.write(f"**{mes}:** R$ {total_perdido[mes]:,.2f}")
+        # Total perdido no mês
+        st.markdown(f"<br><b>Total perdido em {mes}:</b> <span style='color: red;'>R$ {total_perdido:.2f}</span><br><hr>", unsafe_allow_html=True)
+
+# Cálculo final
+if st.button("Calcular"):
+    total_trimestral = valor_mensal * 3
+    total_recebido = total_trimestral
+
+    for indicadores in indicadores_por_mes:
+        for indicador, ativo in indicadores.items():
+            if not ativo:
+                total_recebido -= valor_mensal * pesos[indicador]
+
+    st.success(f"💰 Valor final da meta trimestral: R$ {total_recebido:.2f}")
