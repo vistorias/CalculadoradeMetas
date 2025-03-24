@@ -1,87 +1,84 @@
 import streamlit as st
+import pandas as pd
 
+# Configuração da página
 st.set_page_config(page_title="Calculadora de Metas Trimestrais", layout="wide")
 st.markdown("<h1 style='text-align: center;'>📊 Calculadora de Metas Trimestrais</h1>", unsafe_allow_html=True)
 
-# Valor da meta mensal
-valor_mensal = st.number_input("Digite o valor mensal da meta:", min_value=0.0, step=10.0, format="%.2f")
+# Entrada de valor mensal
+st.markdown("<h6>Digite o valor mensal da meta:</h6>", unsafe_allow_html=True)
+valor_mensal = st.number_input("", min_value=0.0, step=10.0, format="%.2f")
 
-# Pesos de cada indicador
+# Pesos dos indicadores
 pesos = {
-    "Produção": 0.15,
-    "Ticket Médio": 0.15,
-    "Despesas": 0.15,
-    "Satisfação Cliente": 0.275,
-    "Pesquisa Clima": 0.0688,
-    "Turnover": 0.0688,
-    "ABS": 0.0688,
-    "Treinamento": 0.0688
+    'Produção': 0.15,
+    'Ticket Médio': 0.15,
+    'Despesas': 0.15,
+    'Satisfação Cliente': 0.275,
+    'Pesquisa Clima': 0.0688,
+    'Turnover': 0.0688,
+    'ABS': 0.0688,
+    'Treinamento': 0.0688
 }
 
 meses = ["Janeiro", "Fevereiro", "Março"]
-indicadores = list(pesos.keys())
-
 col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+colunas = [col1, col2, col3]
 
 # Armazenar seleções
-selecoes = {indicador: {} for indicador in indicadores}
-total_perdido_por_mes = {mes: 0.0 for mes in meses}
+selecoes = {mes: {} for mes in meses}
+resultado_individual = {indicador: {mes: True for mes in meses} for indicador in pesos}
 
-with col1:
-    st.subheader("Janeiro")
-    for indicador in indicadores:
-        key = f"{indicador}_Janeiro"
-        selecoes[indicador]["Janeiro"] = st.checkbox(f"{indicador} (Janeiro)", value=True, key=key)
+# Criação dos checkboxes
+for idx, mes in enumerate(meses):
+    with colunas[idx]:
+        st.subheader(mes)
+        for indicador in pesos:
+            chave = f"{indicador} ({mes})"
+            selecionado = st.checkbox(chave, value=True)
+            selecoes[mes][indicador] = selecionado
+            resultado_individual[indicador][mes] = selecionado
 
-with col2:
-    st.subheader("Fevereiro")
-    for indicador in indicadores:
-        key = f"{indicador}_Fevereiro"
-        selecoes[indicador]["Fevereiro"] = st.checkbox(f"{indicador} (Fevereiro)", value=True, key=key)
-
-with col3:
-    st.subheader("Março")
-    for indicador in indicadores:
-        key = f"{indicador}_Março"
-        selecoes[indicador]["Março"] = st.checkbox(f"{indicador} (Março)", value=True, key=key)
-
+# Coluna de valor bônus
 with col4:
     st.subheader("Valor Bônus")
-    total_bonificado = 0
-    for indicador in indicadores:
+    for indicador in pesos:
         total = 0
-        penalidades = 0
+        completo = True
         for mes in meses:
-            valor_indicador = valor_mensal * pesos[indicador]
-            if selecoes[indicador][mes]:
-                total += valor_indicador
+            if not resultado_individual[indicador][mes]:
+                completo = False
             else:
-                penalidades += valor_indicador
-                total_perdido_por_mes[mes] += valor_indicador
+                total += valor_mensal * pesos[indicador]
 
-        total_bonificado += total
-
-        if penalidades > 0:
-            st.markdown(f"❌ R$ {total:.2f}", unsafe_allow_html=True)
+        if completo:
+            st.markdown(f"✅ R$ {total:.2f}")
         else:
-            st.markdown(f"✅ R$ {total:.2f}", unsafe_allow_html=True)
+            st.markdown(f"❌ R$ {valor_mensal * pesos[indicador]:.2f}")
 
-# Mostrar total perdido por mês
-coluna_mensal = st.columns(3)
+# Total perdido por mês
+st.markdown("<hr>", unsafe_allow_html=True)
+col_jan, col_fev, col_mar = st.columns(3)
+total_perdido_mes = {}
 for i, mes in enumerate(meses):
-    with coluna_mensal[i]:
-        perdido = total_perdido_por_mes[mes]
-        st.markdown(f"**Total perdido em {mes}:** <span style='color:red;'>R$ {perdido:.2f}</span>", unsafe_allow_html=True)
+    total = 0
+    for indicador in pesos:
+        if not selecoes[mes][indicador]:
+            total += valor_mensal * pesos[indicador]
+    total_perdido_mes[mes] = total
+    with [col_jan, col_fev, col_mar][i]:
+        st.markdown(f"<div style='text-align: center; font-weight: bold;'>Total perdido em {mes}: <span style='color: red;'>R$ {total:.2f}</span></div>", unsafe_allow_html=True)
 
-# Botão de cálculo
+# Botão Calcular e resultado final
 if st.button("Calcular"):
-    total_perdido = sum(total_perdido_por_mes.values())
-    valor_total = valor_mensal * 3
-    valor_final = valor_total - total_perdido
+    total_trimestre = valor_mensal * 3
+    total_perdido = sum(total_perdido_mes.values())
+    valor_final = total_trimestre - total_perdido
 
-    st.markdown("<hr>", unsafe_allow_html=True)
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.markdown(f"<span style='color:#e69500;'>💰 Total perdido no trimestre:</span> <span style='color:red;'>R$ {total_perdido:.2f}</span>", unsafe_allow_html=True)
-    with col_b:
-        st.markdown(f"<span style='color:green;'>✅ Valor final da meta a receber: R$ {valor_final:.2f}</span>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align: center; font-size: 20px; font-weight: bold;'>
+        🧮 Total perdido no trimestre: <span style='color: red;'>R$ {:.2f}</span><br><br>
+        ✅ Valor final da meta a receber: <span style='color: green;'>R$ {:.2f}</span>
+    </div>
+    """.format(total_perdido, valor_final), unsafe_allow_html=True)
