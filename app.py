@@ -21,8 +21,9 @@ pesos = {
 
 # Meses e colunas
 meses = ["Janeiro", "Fevereiro", "Março"]
-col1, col2, col3 = st.columns(3)
-colunas = [col1, col2, col3]
+colunas = st.columns(3)
+
+totais_perdidos = {}
 
 for i, col in enumerate(colunas):
     mes = meses[i]
@@ -30,18 +31,34 @@ for i, col in enumerate(colunas):
 
     with col:
         st.subheader(mes)
+
         for indicador, peso in pesos.items():
             valor_indicador = valor_mensal * peso
-            ativo = st.checkbox(f"{indicador} ({mes})", value=True, key=f"{indicador}_{mes}")
+            key = f"{indicador}_{mes}"
+            ativo = st.checkbox(f"{indicador} ({mes})", value=True, key=key)
 
-            cor = "green" if ativo else "red"
             icone = "✅" if ativo else "❌"
-            valor_formatado = f"R$ {valor_indicador:.2f}"
-            texto = f"<span style='color:{cor};'>{icone} {indicador} ({mes}) — {valor_formatado}</span>"
-
-            st.markdown(texto, unsafe_allow_html=True)
-
+            cor = "green" if ativo else "red"
             if not ativo:
                 total_perdido += valor_indicador
 
-        st.markdown(f"<br><b>Total perdido em {mes}:</b> <span style='color:red;'>R$ {total_perdido:.2f}</span>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div style='display: flex; align-items: center; gap: 5px;'>"
+                f"<span style='color:{cor}; font-size:15px;'>{icone} {indicador} ({mes}) — R$ {valor_indicador:,.2f}</span>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+        st.markdown(
+            f"<br><b>Total perdido em {mes}:</b> <span style='color:red;'>R$ {total_perdido:,.2f}</span>",
+            unsafe_allow_html=True
+        )
+        totais_perdidos[mes] = total_perdido
+
+# Total perdido no trimestre
+total_geral = sum(totais_perdidos.values())
+st.markdown("---")
+st.markdown(
+    f"<h3 style='text-align: center;'>💰 Total perdido no trimestre: <span style='color:red;'>R$ {total_geral:,.2f}</span></h3>",
+    unsafe_allow_html=True
+)
